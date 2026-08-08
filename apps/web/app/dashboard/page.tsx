@@ -68,6 +68,11 @@ export default function AdminDashboardPage() {
   const [showWelcome, setShowWelcome] = useState<boolean>(false);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
     if (localStorage.getItem('show_welcome_banner') === 'true') {
       setShowWelcome(true);
       localStorage.removeItem('show_welcome_banner');

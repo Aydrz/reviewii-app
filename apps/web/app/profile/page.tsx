@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { User, CheckCircle2, Folder, HardDrive, Settings, Grid3X3 } from 'lucide-react';
 import { fetchApi, getFullMediaUrl } from '../../lib/api-client';
@@ -8,6 +8,13 @@ import { Project } from '@reviewii/shared-types';
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'all' | 'approved'>('all');
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/login';
+    }
+  }, []);
 
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ['projects', 'profile'],

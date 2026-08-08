@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UploadCloud, CheckCircle2, Copy, Share2, ExternalLink, ShieldCheck, KeyRound, Clock, Zap } from 'lucide-react';
 import { fetchApi, uploadFileApi, UploadProgressInfo } from '../../lib/api-client';
 import { Project } from '@reviewii/shared-types';
@@ -34,6 +34,13 @@ export default function AdminUploadPage() {
   const [uploadProgress, setUploadProgress] = useState<UploadProgressInfo | null>(null);
   const [createdResult, setCreatedResult] = useState<{ url: string; pin?: string | null } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/login';
+    }
+  }, []);
 
   const handleFileChange = (file: File) => {
     setSelectedFile(file);
