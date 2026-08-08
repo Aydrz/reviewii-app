@@ -52,8 +52,21 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  const port = process.env.PORT || 3001;
-  await app.listen(port);
-  console.log(`🚀 Reviewii NestJS API server running on http://localhost:${port}`);
+  await app.init();
+  expressApp = app.getHttpAdapter().getInstance();
+
+  if (!process.env.VERCEL) {
+    const port = process.env.PORT || 3001;
+    await app.listen(port);
+    console.log(`🚀 Reviewii NestJS API server running on http://localhost:${port}`);
+  }
 }
+
 bootstrap();
+
+export default async function handler(req: any, res: any) {
+  if (!expressApp) {
+    await bootstrap();
+  }
+  return expressApp(req, res);
+}
