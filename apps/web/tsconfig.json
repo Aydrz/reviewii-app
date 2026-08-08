@@ -16,6 +16,10 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@reviewii/shared-types": ["../../packages/shared-types/src/index.ts"]
+    },
     "plugins": [
       {
         "name": "next"
