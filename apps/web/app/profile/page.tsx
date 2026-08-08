@@ -10,7 +10,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'all' | 'approved'>('all');
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('editor_token');
     if (!token) {
       window.location.href = '/login';
     }

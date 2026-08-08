@@ -68,7 +68,7 @@ export default function AdminDashboardPage() {
   const [showWelcome, setShowWelcome] = useState<boolean>(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('editor_token');
     if (!token) {
       window.location.href = '/login';
       return;
