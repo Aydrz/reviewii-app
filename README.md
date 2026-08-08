@@ -79,3 +79,4 @@ Untuk panduan deploy langkah demi langkah dari **GitHub ➔ Vercel / Netlify / R
 
 ### 👤 CREATOR & CREDITS
 Vibe Coded By **Abaalwi** & Antigravity AI (Google DeepMind Team).
+Built for seamless Vercel & Supabase Cloud Deployment.
