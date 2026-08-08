@@ -12,6 +12,8 @@ import { DriveModule } from './modules/drive/drive.module';
 import { ExportModule } from './modules/export/export.module';
 import { WebsocketModule } from './modules/websocket/websocket.module';
 
+import { AppController } from './app.controller';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -27,5 +29,6 @@ import { WebsocketModule } from './modules/websocket/websocket.module';
     ExportModule,
     WebsocketModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
