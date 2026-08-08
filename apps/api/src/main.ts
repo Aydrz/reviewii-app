@@ -6,6 +6,8 @@ import helmet from 'helmet';
 import * as path from 'path';
 import * as fs from 'fs';
 
+let expressApp: any;
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bodyParser: false,
