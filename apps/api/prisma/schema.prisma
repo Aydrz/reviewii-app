@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  password_hash String
+  created_at    DateTime       @default(now())
+  projects      Project[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Project {
+  id                String        @id @default(uuid())
+  owner_id          String?
+  owner             User?         @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  client_name       String
+  client_contact    String
+  editor_phone      String?       @default("087824006766")
+  title             String
+  description       String?
+  status            String        @default("pending") // pending, revisi, approved
+  deadline          DateTime?
+  drive_folder_id   String?
+  watermark_enabled Boolean       @default(true)
+  payment_required  Boolean       @default(false)
+  payment_status    Boolean       @default(false)
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+  versions          Version[]
+  guest_tokens      GuestToken[]
+  chat_messages     ChatMessage[]
+
+  @@map("projects")
+}
+
+model Version {
+  id                  String     @id @default(uuid())
+  project_id          String
+  project             Project    @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  version_number      Int
+  file_type           String     // video, photo
+  drive_file_id       String?
+  drive_proxy_file_id String?
+  file_url            String
+  proxy_url           String?
+  thumbnail_url       String?
+  watermark_url       String?
+  duration_seconds    Float      @default(0)
+  processing_status   String     @default("ready") // processing, ready, failed
+  uploaded_at         DateTime   @default(now())
+  comments            Comment[]
+  approvals           Approval[]
+
+  @@map("versions")
+}
+
+model Comment {
+  id                String         @id @default(uuid())
+  version_id        String
+  version           Version        @relation(fields: [version_id], references: [id], onDelete: Cascade)
+  author_type       String         // editor, guest
+  author_name       String
+  guest_token_id    String?
+  guest_token       GuestToken?    @relation(fields: [guest_token_id], references: [id], onDelete: SetNull)
+  timestamp_seconds Float          @default(0)
+  timestamp_end_seconds Float?
+  category          String?        @default("Warna")
+  attachment_url    String?
+  pin_x             Float?
+  pin_y             Float?
+  comment_type      String         @default("text") // text, voice, drawing
+  content           String?
+  voice_url         String?
+  drawing_data      String?
+  created_at        DateTime       @default(now())
+  replies           CommentReply[]
+
+  @@map("comments")
+}
+
+model CommentReply {
+  id          String   @id @default(uuid())
+  comment_id  String
+  comment     Comment  @relation(fields: [comment_id], references: [id], onDelete: Cascade)
+  author_type String   // editor, guest
+  author_name String
+  content     String
+  created_at  DateTime @default(now())
+
+  @@map("comment_replies")
+}
+
+model Approval {
+  id             String      @id @default(uuid())
+  version_id     String
+  version        Version     @relation(fields: [version_id], references: [id], onDelete: Cascade)
+  approved_by    String
+  guest_token_id String?
+  guest_token    GuestToken? @relation(fields: [guest_token_id], references: [id], onDelete: SetNull)
+  approved_at    DateTime    @default(now())
+
+  @@map("approvals")
+}
+
+model GuestToken {
+  id               String     @id @default(uuid())
+  project_id       String
+  project          Project    @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  token            String     @unique
+  pin_code         String?
+  expires_at       DateTime?
+  last_accessed_at DateTime?
+  comments         Comment[]
+  approvals        Approval[]
+
+  @@map("guest_tokens")
+}
+
+model Notification {
+  id             String   @id @default(uuid())
+  user_id        String
+  user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  type           String
+  ref_project_id String?
+  ref_version_id String?
+  is_read        Boolean  @default(false)
+  created_at     DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model ChatMessage {
+  id             String   @id @default(uuid())
+  project_id     String
+  project        Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  author_type    String   // editor, guest
+  author_name    String
+  content        String
+  attachment_url String?
+  created_at     DateTime @default(now())
+
+  @@map("chat_messages")
+}
