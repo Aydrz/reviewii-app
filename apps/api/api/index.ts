@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../src/app.module';
+import { AppServerlessModule } from '../src/app.serverless.module';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
@@ -7,8 +7,9 @@ import helmet from 'helmet';
 let expressApp: any;
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppServerlessModule, {
     bodyParser: false,
+    logger: ['error', 'warn'],
   });
 
   app.use(
@@ -20,12 +21,12 @@ async function bootstrap() {
   );
 
   const bodyParser = require('body-parser');
-  app.use(bodyParser.json({ limit: '10mb' }));
-  app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   app.enableCors({
-    origin: [frontendUrl, 'http://localhost:3000', 'https://*.vercel.app', 'https://*.netlify.app'],
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -44,8 +45,13 @@ async function bootstrap() {
 }
 
 export default async function handler(req: any, res: any) {
-  if (!expressApp) {
-    await bootstrap();
+  try {
+    if (!expressApp) {
+      await bootstrap();
+    }
+    return expressApp(req, res);
+  } catch (err) {
+    console.error('Serverless handler error:', err);
+    res.status(500).json({ message: 'Internal server error', error: String(err) });
   }
-  return expressApp(req, res);
 }
