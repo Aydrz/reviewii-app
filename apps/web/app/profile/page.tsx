@@ -10,8 +10,8 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'all' | 'approved'>('all');
 
   useEffect(() => {
-    const token = localStorage.getItem('editor_token');
-    if (!token) {
+    const isAuth = localStorage.getItem('editor_auth') === 'true' || !!localStorage.getItem('editor_token');
+    if (!isAuth) {
       window.location.href = '/login';
     }
   }, []);

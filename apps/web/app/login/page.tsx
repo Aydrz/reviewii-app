@@ -33,6 +33,7 @@ export default function EditorLoginPage() {
       if (username === 'Kominfotapin' && password === 'kominfo2017') {
         localStorage.setItem('editor_auth', 'true');
         localStorage.setItem('editor_name', 'Kominfotapin');
+        localStorage.setItem('editor_token', 'local-fallback');
         localStorage.setItem('show_welcome_banner', 'true');
         router.push('/dashboard');
         return;

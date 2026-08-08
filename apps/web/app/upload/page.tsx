@@ -36,8 +36,8 @@ export default function AdminUploadPage() {
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('editor_token');
-    if (!token) {
+    const isAuth = localStorage.getItem('editor_auth') === 'true' || !!localStorage.getItem('editor_token');
+    if (!isAuth) {
       window.location.href = '/login';
     }
   }, []);

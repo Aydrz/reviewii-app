@@ -68,8 +68,8 @@ export default function AdminDashboardPage() {
   const [showWelcome, setShowWelcome] = useState<boolean>(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('editor_token');
-    if (!token) {
+    const isAuth = localStorage.getItem('editor_auth') === 'true' || !!localStorage.getItem('editor_token');
+    if (!isAuth) {
       window.location.href = '/login';
       return;
     }
