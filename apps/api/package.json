@@ -9,9 +9,9 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "postinstall": "npx prisma generate",
-    "prisma:generate": "npx prisma generate",
-    "prisma:push": "npx prisma db push"
+    "postinstall": "npx --no-install prisma generate",
+    "prisma:generate": "npx --no-install prisma generate",
+    "prisma:push": "npx --no-install prisma db push"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.7",
