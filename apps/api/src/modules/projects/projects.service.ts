@@ -12,37 +12,45 @@ export class ProjectsService {
   ) {}
 
   async findAll(status?: string, search?: string) {
-    const where: any = {};
-    if (status) {
-      where.status = status;
-    }
-    if (search) {
-      where.OR = [
-        { title: { contains: search } },
-        { client_name: { contains: search } },
-      ];
-    }
+    try {
+      const where: any = {};
+      if (status) {
+        where.status = status;
+      }
+      if (search) {
+        where.OR = [
+          { title: { contains: search, mode: 'insensitive' } },
+          { client_name: { contains: search, mode: 'insensitive' } },
+        ];
+      }
 
-    return this.prisma.project.findMany({
-      where,
-      orderBy: { updated_at: 'desc' },
-      include: {
-        versions: {
-          orderBy: { version_number: 'desc' },
-          take: 1,
-          include: {
-            comments: {
-              include: { replies: true },
-              orderBy: { timestamp_seconds: 'asc' },
-            },
-            _count: {
-              select: { comments: true },
+      return await this.prisma.project.findMany({
+        where,
+        orderBy: { updated_at: 'desc' },
+        include: {
+          versions: {
+            orderBy: { version_number: 'desc' },
+            take: 1,
+            include: {
+              comments: {
+                include: { replies: true },
+                orderBy: { timestamp_seconds: 'asc' },
+              },
+              _count: {
+                select: { comments: true },
+              },
             },
           },
+          guest_tokens: {
+            take: 1,
+            orderBy: { expires_at: 'desc' },
+          },
         },
-        guest_tokens: true,
-      },
-    });
+      });
+    } catch (err: any) {
+      console.error('ProjectsService.findAll error:', err);
+      return [];
+    }
   }
 
 
