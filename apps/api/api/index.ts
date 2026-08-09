@@ -58,7 +58,7 @@ export default async function handler(req: any, res: any) {
     res.status(500).json({
       status: 'error',
       message: 'Serverless Handler Initialization Error',
-      details: err && err.message ? err.message : String(err),
+      details: err && err.stack ? err.stack : (err && err.message ? err.message : String(err)),
     });
   }
 }
