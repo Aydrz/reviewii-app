@@ -68,4 +68,60 @@ export class VersionsService {
 
     return version;
   }
+
+  async uploadChunk(
+    projectId: string,
+    uploadId: string,
+    chunkIndex: number,
+    totalChunks: number,
+    originalName: string,
+    fileType: 'video' | 'photo',
+    fileBuffer: Buffer,
+  ) {
+    const fs = require('fs');
+    const path = require('path');
+    const os = require('os');
+
+    const tempDir = path.join(os.tmpdir(), 'chunks', uploadId);
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    const chunkPath = path.join(tempDir, `chunk_${chunkIndex}`);
+    await fs.promises.writeFile(chunkPath, fileBuffer);
+
+    const existingChunks = fs.readdirSync(tempDir).filter((f: string) => f.startsWith('chunk_'));
+
+    if (existingChunks.length < totalChunks) {
+      return { status: 'uploading_chunk', chunkIndex, totalChunks };
+    }
+
+    const chunkBuffers: Buffer[] = [];
+    for (let i = 0; i < totalChunks; i++) {
+      const p = path.join(tempDir, `chunk_${i}`);
+      if (fs.existsSync(p)) {
+        chunkBuffers.push(await fs.promises.readFile(p));
+      }
+    }
+    const combinedBuffer = Buffer.concat(chunkBuffers);
+
+    try {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    } catch (e) {}
+
+    const mockFile: Express.Multer.File = {
+      buffer: combinedBuffer,
+      originalname: originalName,
+      fieldname: 'file',
+      encoding: '7bit',
+      mimetype: fileType === 'photo' ? 'image/jpeg' : 'video/mp4',
+      size: combinedBuffer.length,
+      stream: null as any,
+      destination: '',
+      filename: originalName,
+      path: '',
+    };
+
+    return this.uploadVersion(projectId, mockFile, fileType);
+  }
 }

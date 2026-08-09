@@ -38,7 +38,7 @@ export interface UploadProgressInfo {
   remainingSec: number;
 }
 
-export function uploadFileApi<T>(
+function uploadSingleFile<T>(
   endpoint: string,
   formData: FormData,
   onProgress?: (info: UploadProgressInfo) => void,
@@ -90,6 +90,60 @@ export function uploadFileApi<T>(
     }
     xhr.send(formData);
   });
+}
+
+export async function uploadFileApi<T>(
+  endpoint: string,
+  formData: FormData,
+  onProgress?: (info: UploadProgressInfo) => void,
+): Promise<T> {
+  const file = formData.get('file') as File;
+  const fileType = (formData.get('file_type') as string) || 'video';
+
+  // 3 MB chunk size (strictly below Vercel's 4.5 MB limit)
+  const CHUNK_SIZE = 3 * 1024 * 1024;
+
+  if (!file || file.size <= CHUNK_SIZE) {
+    return uploadSingleFile<T>(endpoint, formData, onProgress);
+  }
+
+  const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+  const uploadId = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const projectId = endpoint.split('/projects/')[1]?.split('/')[0];
+  const chunkEndpoint = `/projects/${projectId}/versions/chunk`;
+
+  let lastResult: any = null;
+  const startTime = Date.now();
+
+  for (let i = 0; i < totalChunks; i++) {
+    const start = i * CHUNK_SIZE;
+    const end = Math.min(file.size, start + CHUNK_SIZE);
+    const chunkBlob = file.slice(start, end);
+
+    const chunkFormData = new FormData();
+    chunkFormData.append('file', chunkBlob, file.name);
+    chunkFormData.append('upload_id', uploadId);
+    chunkFormData.append('chunk_index', String(i));
+    chunkFormData.append('total_chunks', String(totalChunks));
+    chunkFormData.append('original_name', file.name);
+    chunkFormData.append('file_type', fileType);
+
+    lastResult = await uploadSingleFile(chunkEndpoint, chunkFormData, (chunkProg) => {
+      if (onProgress) {
+        const loaded = Math.min(file.size, start + chunkProg.loaded);
+        const total = file.size;
+        const percentage = Math.round((loaded / total) * 100);
+        const elapsedTimeSec = (Date.now() - startTime) / 1000;
+        const speedBps = elapsedTimeSec > 0 ? loaded / elapsedTimeSec : 0;
+        const remainingBytes = total - loaded;
+        const remainingSec = speedBps > 0 ? Math.ceil(remainingBytes / speedBps) : 0;
+
+        onProgress({ loaded, total, percentage, speedBps, remainingSec });
+      }
+    });
+  }
+
+  return lastResult as T;
 }
 
 export function getFullMediaUrl(url?: string): string {

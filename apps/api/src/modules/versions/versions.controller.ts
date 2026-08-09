@@ -31,4 +31,32 @@ export class VersionsController {
   ) {
     return this.versionsService.uploadVersion(projectId, file, fileType);
   }
+
+  @Post('projects/:id/versions/chunk')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5 MB per chunk limit
+    },
+  }))
+  async uploadChunk(
+    @Param('id') projectId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('upload_id') uploadId: string,
+    @Body('chunk_index') chunkIndexStr: string,
+    @Body('total_chunks') totalChunksStr: string,
+    @Body('original_name') originalName: string,
+    @Body('file_type') fileType: 'video' | 'photo' = 'video',
+  ) {
+    const chunkIndex = parseInt(chunkIndexStr || '0', 10);
+    const totalChunks = parseInt(totalChunksStr || '1', 10);
+    return this.versionsService.uploadChunk(
+      projectId,
+      uploadId,
+      chunkIndex,
+      totalChunks,
+      originalName,
+      fileType,
+      file.buffer,
+    );
+  }
 }
