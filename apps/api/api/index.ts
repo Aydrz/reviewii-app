@@ -1,46 +1,45 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../src/app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import express from 'express';
 
-let expressApp: any;
+const server = express();
+let isAppInitialized = false;
+let initError: any = null;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log'],
-  });
-
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-  app.enableCors({
-    origin: [frontendUrl, 'http://localhost:3000', 'https://*.vercel.app', 'https://*.netlify.app'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  });
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidUnknownValues: false,
-    }),
-  );
-
-  await app.init();
-  expressApp = app.getHttpAdapter().getInstance();
+  if (isAppInitialized || initError) return;
+  try {
+    const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
+      logger: ['error', 'warn'],
+    });
+    app.enableCors({ origin: '*' });
+    await app.init();
+    isAppInitialized = true;
+  } catch (err: any) {
+    initError = err;
+    console.error('NestJS Bootstrap Error:', err);
+  }
 }
 
 export default async function handler(req: any, res: any) {
   try {
-    if (!expressApp) {
-      await bootstrap();
+    await bootstrap();
+    if (initError) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'NestJS Bootstrap Error Caught',
+        error: String(initError && initError.message ? initError.message : initError),
+        stack: String(initError && initError.stack ? initError.stack : ''),
+      });
     }
-    return expressApp(req, res);
+    return server(req, res);
   } catch (err: any) {
-    console.error('Vercel Handler Error:', err);
-    res.status(500).json({
+    return res.status(500).json({
       status: 'error',
-      message: 'Serverless Handler Initialization Error',
-      details: err && err.stack ? err.stack : (err && err.message ? err.message : String(err)),
+      message: 'Vercel Handler Exception',
+      error: String(err && err.message ? err.message : err),
+      stack: String(err && err.stack ? err.stack : ''),
     });
   }
 }
