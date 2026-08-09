@@ -12,23 +12,24 @@ let expressApp: any;
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bodyParser: false,
+    logger: ['error', 'warn'],
   });
 
-  // Security Headers via Helmet
-  app.use(
-    helmet({
-      contentSecurityPolicy: false, // Disabled for static media streaming & cross-origin canvas
-      crossOriginResourcePolicy: { policy: 'cross-origin' },
-      crossOriginEmbedderPolicy: false,
-    }),
-  );
+  const helmetFn = typeof helmet === 'function' ? helmet : (helmet as any).default;
+  if (typeof helmetFn === 'function') {
+    app.use(
+      helmetFn({
+        contentSecurityPolicy: false,
+        crossOriginResourcePolicy: { policy: 'cross-origin' },
+        crossOriginEmbedderPolicy: false,
+      }),
+    );
+  }
 
-  // Body parser limit (10MB for JSON, video streaming handled via Multer)
   const bodyParser = require('body-parser');
-  app.use(bodyParser.json({ limit: '10mb' }));
-  app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
-  // CORS Configuration
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
   app.enableCors({
     origin: [frontendUrl, 'http://localhost:3000', 'https://*.vercel.app', 'https://*.netlify.app'],
@@ -37,7 +38,6 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   });
 
-  // Global Input Validation & Sanitization Pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -46,7 +46,6 @@ async function bootstrap() {
     }),
   );
 
-  // Serve static uploads
   const uploadsDir = process.env.VERCEL
     ? path.join(os.tmpdir(), 'uploads')
     : path.join(process.cwd(), 'uploads');
@@ -68,15 +67,26 @@ async function bootstrap() {
   if (!process.env.VERCEL) {
     const port = process.env.PORT || 3001;
     await app.listen(port);
-    console.log(`🚀 Reviewii NestJS API server running on http://localhost:${port}`);
   }
 }
 
-bootstrap();
+if (!process.env.VERCEL) {
+  bootstrap();
+}
 
 export default async function handler(req: any, res: any) {
-  if (!expressApp) {
-    await bootstrap();
+  try {
+    if (!expressApp) {
+      await bootstrap();
+    }
+    return expressApp(req, res);
+  } catch (err: any) {
+    console.error('Vercel serverless main handler error:', err);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Serverless Handler Execution Error',
+      error: String(err && err.message ? err.message : err),
+      stack: String(err && err.stack ? err.stack : ''),
+    });
   }
-  return expressApp(req, res);
 }
