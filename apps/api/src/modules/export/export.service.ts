@@ -1,8 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const PDFDocument = require('pdfkit');
-
 // Hex to RGB helper
 function hex2rgb(hex: string): [number, number, number] {
   const h = hex.replace('#', '');
@@ -28,6 +25,8 @@ export class ExportService {
   constructor(private prisma: PrismaService) {}
 
   async generatePdfReport(projectId: string): Promise<Buffer> {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const PDFDocument = require('pdfkit');
     const project = await this.prisma.project.findUnique({
       where: { id: projectId },
       include: {
