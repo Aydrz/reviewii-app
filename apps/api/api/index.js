@@ -7,17 +7,35 @@ const helmet = require('helmet');
 const server = express();
 let app;
 
+function loadServerlessModule() {
+  const candidatePaths = [
+    '../dist/apps/api/src/app.serverless.module',
+    '../dist/src/app.serverless.module',
+    '../dist/app.serverless.module',
+    '../../dist/apps/api/src/app.serverless.module',
+    '../../dist/src/app.serverless.module',
+    '../../dist/app.serverless.module',
+    './dist/apps/api/src/app.serverless.module',
+    './dist/src/app.serverless.module',
+    './dist/app.serverless.module',
+  ];
+
+  for (const p of candidatePaths) {
+    try {
+      const mod = require(p);
+      if (mod && (mod.AppServerlessModule || mod.AppModule)) {
+        return mod.AppServerlessModule || mod.AppModule;
+      }
+    } catch (e) {
+      // try next path
+    }
+  }
+  throw new Error(`Cannot locate compiled NestJS module in any of: ${candidatePaths.join(', ')}`);
+}
+
 async function bootstrap() {
   if (!app) {
-    // Import compiled NestJS serverless module from dist
-    let modulePath;
-    try {
-      modulePath = require.resolve('../dist/apps/api/src/app.serverless.module');
-    } catch {
-      modulePath = require.resolve('../dist/app.serverless.module');
-    }
-
-    const { AppServerlessModule } = require(modulePath);
+    const AppServerlessModule = loadServerlessModule();
     const { ValidationPipe } = require('@nestjs/common');
 
     app = await NestFactory.create(AppServerlessModule, new ExpressAdapter(server), {
@@ -63,7 +81,7 @@ module.exports = async (req, res) => {
     await bootstrap();
     server(req, res);
   } catch (err) {
-    console.error('Vercel serverless error:', err);
+    console.error('Vercel serverless bootstrap error:', err);
     res.status(500).json({
       status: 'error',
       message: 'Serverless Handler Initialization Error',
