@@ -5,6 +5,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 
 let expressApp: any;
 
@@ -46,13 +47,20 @@ async function bootstrap() {
   );
 
   // Serve static uploads
-  const uploadsDir = path.join(process.cwd(), 'uploads');
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
+  const uploadsDir = process.env.VERCEL
+    ? path.join(os.tmpdir(), 'uploads')
+    : path.join(process.cwd(), 'uploads');
+
+  try {
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    app.useStaticAssets(uploadsDir, {
+      prefix: '/uploads/',
+    });
+  } catch (err) {
+    // Ignore static assets errors on read-only serverless environment
   }
-  app.useStaticAssets(uploadsDir, {
-    prefix: '/uploads/',
-  });
 
   await app.init();
   expressApp = app.getHttpAdapter().getInstance();

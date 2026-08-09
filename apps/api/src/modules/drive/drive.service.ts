@@ -5,6 +5,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Readable } from 'stream';
 
+import * as os from 'os';
+
 @Injectable()
 export class DriveService {
   private readonly logger = new Logger(DriveService.name);
@@ -13,9 +15,16 @@ export class DriveService {
   private rootFolderId: string | null = null;
 
   constructor(private configService: ConfigService) {
-    this.uploadDir = path.join(process.cwd(), 'uploads');
-    if (!fs.existsSync(this.uploadDir)) {
-      fs.mkdirSync(this.uploadDir, { recursive: true });
+    this.uploadDir = process.env.VERCEL
+      ? path.join(os.tmpdir(), 'uploads')
+      : path.join(process.cwd(), 'uploads');
+
+    try {
+      if (!fs.existsSync(this.uploadDir)) {
+        fs.mkdirSync(this.uploadDir, { recursive: true });
+      }
+    } catch (err: any) {
+      this.logger.warn(`Could not create uploads dir: ${err.message}`);
     }
 
     this.initGoogleDrive();
