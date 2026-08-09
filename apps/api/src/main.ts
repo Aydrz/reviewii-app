@@ -46,6 +46,9 @@ async function bootstrap() {
     }),
   );
 
+  const { AllExceptionsFilter } = require('./common/all-exceptions.filter');
+  app.useGlobalFilters(new AllExceptionsFilter());
+
   const uploadsDir = process.env.VERCEL
     ? path.join(os.tmpdir(), 'uploads')
     : path.join(process.cwd(), 'uploads');
