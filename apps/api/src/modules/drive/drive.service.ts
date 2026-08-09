@@ -115,11 +115,16 @@ export class DriveService {
       }
     }
 
-    const folderPath = path.join(this.uploadDir, clientName, projectTitle);
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath, { recursive: true });
+    try {
+      const folderPath = path.join(this.uploadDir, clientName, projectTitle);
+      if (!fs.existsSync(folderPath)) {
+        fs.mkdirSync(folderPath, { recursive: true });
+      }
+      return folderPath;
+    } catch (err: any) {
+      this.logger.warn(`Could not create local project folder: ${err.message}`);
+      return 'local-folder';
     }
-    return folderPath;
   }
 
   /**
@@ -132,13 +137,20 @@ export class DriveService {
     folderId?: string,
   ): Promise<{ fileId: string; filePath: string }> {
     const dir = path.join(this.uploadDir, subfolder);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    try {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+    } catch (e) {}
+
     const timestamp = Date.now();
     const cleanFileName = fileName.replace(/[^a-zA-Z0-9_.-]/g, '_');
     const fullPath = path.join(dir, `${timestamp}_${cleanFileName}`);
-    await fs.promises.writeFile(fullPath, fileBuffer);
+    try {
+      await fs.promises.writeFile(fullPath, fileBuffer);
+    } catch (err: any) {
+      this.logger.warn(`Local file write warning: ${err.message}`);
+    }
 
     const relativeUrl = `/uploads/${path.relative(this.uploadDir, fullPath).replace(/\\/g, '/')}`;
     let gdriveFileId = path.basename(fullPath);

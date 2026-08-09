@@ -57,8 +57,14 @@ export class VersionsService {
       },
     });
 
-    // Notify connected clients via WebSocket
-    this.gateway.server.to(`project_${projectId}`).emit('version:new', version);
+    // Notify connected clients via WebSocket if available
+    try {
+      if (this.gateway?.server) {
+        this.gateway.server.to(`project_${projectId}`).emit('version:new', version);
+      }
+    } catch (e) {
+      // Ignore WebSocket emit errors on serverless
+    }
 
     return version;
   }
