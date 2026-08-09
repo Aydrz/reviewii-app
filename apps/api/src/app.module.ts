@@ -11,8 +11,9 @@ import { ChatModule } from './modules/chat/chat.module';
 import { DriveModule } from './modules/drive/drive.module';
 import { ExportModule } from './modules/export/export.module';
 import { WebsocketModule } from './modules/websocket/websocket.module';
-
 import { AppController } from './app.controller';
+
+const isVercel = !!process.env.VERCEL;
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { AppController } from './app.controller';
     ChatModule,
     DriveModule,
     ExportModule,
-    WebsocketModule,
+    ...(isVercel ? [] : [WebsocketModule]),
   ],
   controllers: [AppController],
 })
