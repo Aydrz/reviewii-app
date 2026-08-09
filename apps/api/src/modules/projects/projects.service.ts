@@ -82,16 +82,21 @@ export class ProjectsService {
   }
 
   async create(ownerId: string, dto: CreateProjectDto) {
-    const folderId = await this.driveService.createProjectFolder(dto.client_name, dto.title);
+    let folderId: string | null = null;
+    try {
+      folderId = await this.driveService.createProjectFolder(dto.client_name || 'Klien', dto.title || 'Project');
+    } catch (e) {
+      console.warn('Could not create drive folder:', e);
+    }
 
     const project = await this.prisma.project.create({
       data: {
         owner_id: ownerId === 'editor-default-id' ? null : ownerId,
-        client_name: dto.client_name,
-        client_contact: dto.client_contact,
+        client_name: dto.client_name || 'Klien',
+        client_contact: dto.client_contact || '-',
         editor_phone: dto.editor_phone || '087824006766',
-        title: dto.title,
-        description: dto.description,
+        title: dto.title || 'Project',
+        description: dto.description || '',
         deadline: dto.deadline ? new Date(dto.deadline) : null,
         watermark_enabled: dto.watermark_enabled ?? true,
         payment_required: dto.payment_required ?? false,
@@ -108,7 +113,7 @@ export class ProjectsService {
       pinCode = Math.floor(1000 + Math.random() * 9000).toString();
     }
 
-    await this.prisma.guestToken.create({
+    const guestToken = await this.prisma.guestToken.create({
       data: {
         project_id: project.id,
         token,
@@ -117,7 +122,11 @@ export class ProjectsService {
       },
     });
 
-    return this.findOne(project.id);
+    return {
+      ...project,
+      versions: [],
+      guest_tokens: [guestToken],
+    };
   }
 
   async update(id: string, data: any) {

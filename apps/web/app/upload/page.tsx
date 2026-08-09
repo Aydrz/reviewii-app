@@ -49,8 +49,8 @@ export default function AdminUploadPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!clientName || !title || !selectedFile) {
-      toast.error('Nama klien, judul project, dan file wajib diisi!');
+    if (!title || !selectedFile) {
+      toast.error('Judul project dan file video/foto wajib diisi!');
       return;
     }
     setIsSubmitting(true);
@@ -60,8 +60,8 @@ export default function AdminUploadPage() {
       const project = await fetchApi<Project>('/projects', {
         method: 'POST',
         body: JSON.stringify({
-          client_name: clientName,
-          client_contact: clientContact,
+          client_name: clientName || 'Klien Umum',
+          client_contact: clientContact || '-',
           title,
           enable_pin: enablePin,
         }),
