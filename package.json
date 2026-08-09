@@ -11,7 +11,8 @@
     "build:types": "npm run build --workspace=packages/shared-types",
     "build:web": "npm run build --workspace=apps/web",
     "build:api": "npm run build --workspace=apps/api",
-    "build": "npm run build:types && npm run build:web && npm run build:api"
+    "build": "npm run build:types && npm run build:web && npm run build:api",
+    "postinstall": "npm run build:types && npm run prisma:generate --workspace=apps/api"
   },
   "devDependencies": {
     "googleapis": "^174.0.1",
