@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Heart, MessageSquare, PenTool, CheckCircle, Columns, Share2, Send, X } from 'lucide-react';
 import { Version, Comment } from '@reviewii/shared-types';
-import TimelineScrubber from './TimelineScrubber';
+import TimelineScrubber, { VideoQuality } from './TimelineScrubber';
 import DrawingCanvas from './DrawingCanvas';
 import { fetchApi, getFullMediaUrl } from '../../lib/api-client';
 import { useToast } from '../Toast';
@@ -41,6 +41,22 @@ export default function VideoPlayer({
   const [showHeartBurst, setShowHeartBurst] = useState(false);
   const [isDrawingMode, setIsDrawingMode] = useState(false);
   const [isCompareMode, setIsCompareMode] = useState(false);
+  const [selectedQuality, setSelectedQuality] = useState<VideoQuality>('1080p');
+
+  const handleQualityChange = (q: VideoQuality) => {
+    setSelectedQuality(q);
+    if (videoRef.current) {
+      const prevTime = videoRef.current.currentTime;
+      const isVideoPlaying = !videoRef.current.paused;
+      toast.success(`Kualitas resolusi diubah ke ${q}`);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.currentTime = prevTime;
+          if (isVideoPlaying) videoRef.current.play();
+        }
+      }, 50);
+    }
+  };
 
   const lastTapTimeRef = useRef<number>(0);
 
@@ -284,6 +300,8 @@ export default function VideoPlayer({
           isPlaying={isPlaying}
           isMuted={isMuted}
           comments={comments}
+          selectedQuality={selectedQuality}
+          onQualityChange={handleQualityChange}
           onSeek={(t) => {
             if (videoRef.current) videoRef.current.currentTime = t;
             setCurrentTime(t);

@@ -58,6 +58,7 @@ export default function AdminDashboardPage() {
   const [editEditorPhone, setEditEditorPhone] = useState<string>('');
   const [editTitle, setEditTitle] = useState<string>('');
   const [isUpdatingProject, setIsUpdatingProject] = useState<boolean>(false);
+  const [isDeletingProject, setIsDeletingProject] = useState<boolean>(false);
 
   // Notes drawer / modal state
   const [notesProjectId, setNotesProjectId] = useState<string | null>(null);
@@ -131,13 +132,17 @@ export default function AdminDashboardPage() {
   // ── Actions ───────────────────────────────────────────────────────────────
   const confirmDelete = async () => {
     if (!deleteTarget) return;
+    setIsDeletingProject(true);
+    const targetTitle = deleteTarget.title;
     try {
       await fetchApi(`/projects/${deleteTarget.id}`, { method: 'DELETE' });
-      toast.success(`Project "${deleteTarget.title}" berhasil dihapus.`);
+      toast.success(`Project "${targetTitle}" berhasil dihapus.`);
       setDeleteTarget(null);
-      refetch();
+      await refetch();
     } catch {
       toast.error('Gagal menghapus project.');
+    } finally {
+      setIsDeletingProject(false);
     }
   };
 
@@ -617,28 +622,40 @@ export default function AdminDashboardPage() {
         {/* ── MODAL: Konfirmasi Hapus ─────────────────────────────────────── */}
         {deleteTarget && (
           <div
-            onClick={() => setDeleteTarget(null)}
+            onClick={() => !isDeletingProject && setDeleteTarget(null)}
             className="fixed inset-0 z-[99999] w-screen h-screen min-h-screen bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-hidden top-0 left-0 right-0 bottom-0 animate-fade-in"
           >
             <div
               onClick={(e) => e.stopPropagation()}
               className="glass-panel-elevated p-6 max-w-xs w-full space-y-4 text-center border-red-500/30 shadow-2xl rounded-2xl"
             >
-              <AlertTriangle className="w-10 h-10 text-red-400 mx-auto" />
-              <div>
-                <h3 className="text-sm font-bold text-white">Hapus Project?</h3>
-                <p className="text-[11px] text-neutral-400 mt-1.5 leading-relaxed">
-                  <span className="font-semibold text-white">"{deleteTarget.title}"</span> akan dihapus permanen beserta semua catatan dan link review kliennya.
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => setDeleteTarget(null)} className="btn-cyber-secondary py-2 text-xs">
-                  Batal
-                </button>
-                <button onClick={confirmDelete} className="py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/40 rounded-xl font-bold text-xs">
-                  Hapus
-                </button>
-              </div>
+              {isDeletingProject ? (
+                <div className="py-4 space-y-3 flex flex-col items-center justify-center">
+                  <div className="w-10 h-10 border-4 border-red-500/30 border-t-red-500 rounded-full animate-spin" />
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-white">Menghapus Project...</p>
+                    <p className="text-[10px] text-neutral-400">Membersihkan media, catatan, & database realtime...</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <AlertTriangle className="w-10 h-10 text-red-400 mx-auto" />
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Hapus Project?</h3>
+                    <p className="text-[11px] text-neutral-400 mt-1.5 leading-relaxed">
+                      <span className="font-semibold text-white">"{deleteTarget.title}"</span> akan dihapus permanen beserta semua catatan dan link review kliennya.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => setDeleteTarget(null)} className="btn-cyber-secondary py-2 text-xs">
+                      Batal
+                    </button>
+                    <button onClick={confirmDelete} className="py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/40 rounded-xl font-bold text-xs">
+                      Hapus
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

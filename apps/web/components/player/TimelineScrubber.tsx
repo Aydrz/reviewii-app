@@ -1,7 +1,9 @@
 'use client';
 
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Sliders } from 'lucide-react';
 import { Comment } from '@reviewii/shared-types';
+
+export type VideoQuality = '1080p' | '720p' | '480p' | '360p' | 'Auto';
 
 interface TimelineScrubberProps {
   currentTime: number;
@@ -9,6 +11,8 @@ interface TimelineScrubberProps {
   isPlaying: boolean;
   isMuted: boolean;
   comments: Comment[];
+  selectedQuality?: VideoQuality;
+  onQualityChange?: (quality: VideoQuality) => void;
   onSeek: (time: number) => void;
   onTogglePlay: () => void;
   onToggleMute: () => void;
@@ -20,6 +24,8 @@ export default function TimelineScrubber({
   isPlaying,
   isMuted,
   comments,
+  selectedQuality = '1080p',
+  onQualityChange,
   onSeek,
   onTogglePlay,
   onToggleMute,
@@ -83,6 +89,31 @@ export default function TimelineScrubber({
           <span className="font-mono">
             {formatTime(currentTime)} / {formatTime(duration)}
           </span>
+        </div>
+
+        {/* Video Quality Selector (360p - 1080p) */}
+        <div className="relative group">
+          <button className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-xs font-bold text-cyan-400 border border-cyan-500/30 transition-colors">
+            <Sliders className="w-3.5 h-3.5" />
+            <span>{selectedQuality}</span>
+          </button>
+
+          <div className="absolute bottom-full mb-2 right-0 hidden group-hover:flex flex-col bg-neutral-900/95 border border-white/10 rounded-xl p-1.5 shadow-2xl z-50 min-w-[110px] backdrop-blur-lg">
+            {(['1080p', '720p', '480p', '360p', 'Auto'] as const).map((q) => (
+              <button
+                key={q}
+                onClick={() => onQualityChange?.(q)}
+                className={`px-2.5 py-1.5 text-left text-[11px] font-medium rounded-lg transition-colors flex items-center justify-between ${
+                  selectedQuality === q ? 'text-cyan-400 bg-cyan-400/10 font-bold' : 'text-neutral-300 hover:bg-white/10'
+                }`}
+              >
+                <span>{q}</span>
+                <span className="text-[9px] text-neutral-500 font-mono">
+                  {q === '1080p' ? 'Full HD' : q === '720p' ? 'HD' : q === '360p' ? 'Hemat' : ''}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
