@@ -12,7 +12,7 @@
     "build:web": "npm run build --workspace=apps/web",
     "build:api": "npm run build --workspace=apps/api",
     "build": "npm run build:types && npm run build:web && npm run build:api",
-    "postinstall": "npm run build:types && npx prisma generate --schema=apps/api/prisma/schema.prisma"
+    "postinstall": "npm run build:types"
   },
   "devDependencies": {
     "googleapis": "^174.0.1",
