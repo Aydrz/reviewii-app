@@ -1,17 +1,20 @@
 const getApiBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_BACKEND_URL && !process.env.NEXT_PUBLIC_BACKEND_URL.includes('localhost')) {
-    return process.env.NEXT_PUBLIC_BACKEND_URL;
+  let url = process.env.NEXT_PUBLIC_BACKEND_URL;
+  if (!url || url.includes('localhost')) {
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+      url = 'https://reviewii-api.vercel.app';
+    } else {
+      url = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+    }
   }
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-    return 'https://reviewii-app.vercel.app';
-  }
-  return process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+  return url.replace(/\/+$/, '');
 };
 
 const API_BASE_URL = getApiBaseUrl();
 
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${API_BASE_URL}${cleanEndpoint}`;
   const token = typeof window !== 'undefined' ? localStorage.getItem('editor_token') : null;
 
   const headers: Record<string, string> = {
