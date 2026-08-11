@@ -396,7 +396,7 @@ export default function AdminDashboardPage() {
                   </a>
 
                   <a
-                    href={`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'}/projects/${project.id}/export-pdf`}
+                    href={getFullMediaUrl(`/projects/${project.id}/export-pdf`)}
                     target="_blank" rel="noreferrer"
                     title="Export PDF"
                     className="icon-btn"

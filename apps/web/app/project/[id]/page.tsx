@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Download, Share2, FileText, MessageCircle } from 'lucide-react';
 import VideoPlayer from '../../../components/player/VideoPlayer';
 import CommentSheet from '../../../components/comment/CommentSheet';
-import { fetchApi } from '../../../lib/api-client';
+import { fetchApi, getFullMediaUrl } from '../../../lib/api-client';
 import { Project } from '@reviewii/shared-types';
 import { useToast } from '../../../components/Toast';
 
@@ -35,7 +35,7 @@ export default function EditorProjectPage() {
   const comments = currentVersion?.comments || [];
 
   const handleExportPdf = () => {
-    window.open(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'}/projects/${projectId}/export-pdf`, '_blank');
+    window.open(getFullMediaUrl(`/projects/${projectId}/export-pdf`), '_blank');
   };
 
   const handleSendChatMessage = async () => {

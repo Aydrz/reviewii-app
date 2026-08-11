@@ -1,12 +1,16 @@
 import { io, Socket } from 'socket.io-client';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+const getCleanApiUrl = () => {
+  const raw = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+  return raw.replace(/\/+$/, '');
+};
 
 let socket: Socket | null = null;
 
 export function getSocket(): Socket {
   if (!socket) {
-    socket = io(`${API_BASE_URL}/ws`, {
+    socket = io(getCleanApiUrl(), {
+      path: '/socket.io',
       autoConnect: true,
       transports: ['websocket', 'polling'],
     });
