@@ -194,13 +194,28 @@ export default function VideoPlayer({
             {currentVersion.file_type === 'photo' ? (
               <img src={fullMediaUrl} alt="Review Media" className="max-w-full max-h-full object-contain" />
             ) : (
-              <video
-                ref={videoRef}
-                src={fullMediaUrl}
-                poster={getFullMediaUrl(currentVersion.thumbnail_url)}
-                playsInline
-                className="max-w-full max-h-full object-contain"
-              />
+              <>
+                <video
+                  ref={videoRef}
+                  src={fullMediaUrl}
+                  poster={getFullMediaUrl(currentVersion.thumbnail_url)}
+                  playsInline
+                  style={{
+                    maxHeight: selectedQuality === '360p' ? '360px' : selectedQuality === '480p' ? '480px' : selectedQuality === '720p' ? '720px' : '100%',
+                    transform: 'translateZ(0)',
+                  }}
+                  className="max-w-full max-h-full object-contain transition-all duration-300"
+                />
+
+                {/* Active Resolution Badge Overlay */}
+                <div className="absolute top-3 right-3 z-30 pointer-events-none flex items-center gap-1.5 bg-black/80 backdrop-blur-md border border-cyan-500/50 text-cyan-400 px-3 py-1 rounded-full text-xs font-mono font-bold shadow-2xl animate-fade-in">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                  <span>{selectedQuality}</span>
+                  <span className="text-[9px] text-neutral-400 font-sans uppercase">
+                    {selectedQuality === '1080p' ? 'Full HD' : selectedQuality === '720p' ? 'HD' : selectedQuality === '360p' ? 'Saver' : 'SD'}
+                  </span>
+                </div>
+              </>
             )}
 
             {/* Existing Comment Pin Markers */}

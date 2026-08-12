@@ -229,6 +229,8 @@ export class DriveService {
     }
   }
 
+  private fileCache = new Map<string, { id: string; mimeType: string; size?: number }>();
+
   /**
    * Mendapatkan file stream (dari Google Drive atau local disk) untuk pemutaran video
    */
@@ -240,23 +242,43 @@ export class DriveService {
       try {
         let fileId = fileOrPath;
         if (fileOrPath.startsWith('/uploads/')) {
-          const fileName = path.basename(fileOrPath);
-          const searchRes = await this.drive.files.list({
-            q: `name='${fileName}' and trashed=false`,
-            fields: 'files(id, name, mimeType, size)',
-          });
-          if (searchRes.data.files && searchRes.data.files.length > 0) {
-            fileId = searchRes.data.files[0].id!;
+          if (this.fileCache.has(fileOrPath)) {
+            fileId = this.fileCache.get(fileOrPath)!.id;
+          } else {
+            const fileName = path.basename(fileOrPath);
+            const searchRes = await this.drive.files.list({
+              q: `name='${fileName}' and trashed=false`,
+              fields: 'files(id, name, mimeType, size)',
+            });
+            if (searchRes.data.files && searchRes.data.files.length > 0) {
+              fileId = searchRes.data.files[0].id!;
+              this.fileCache.set(fileOrPath, { id: fileId, mimeType: searchRes.data.files[0].mimeType || 'video/mp4' });
+            }
           }
         }
 
         if (!fileId.includes('/') && !fileId.includes('\\')) {
-          const meta = await this.drive.files.get({ fileId, fields: 'mimeType, size' });
           const res = await this.drive.files.get({ fileId, alt: 'media' }, { responseType: 'stream' });
+          let metaMime = 'video/mp4';
+          let metaSize: number | undefined = undefined;
+
+          if (this.fileCache.has(fileId)) {
+            const cached = this.fileCache.get(fileId)!;
+            metaMime = cached.mimeType;
+            metaSize = cached.size;
+          } else {
+            try {
+              const meta = await this.drive.files.get({ fileId, fields: 'mimeType, size' });
+              metaMime = meta.data.mimeType || 'video/mp4';
+              metaSize = meta.data.size ? parseInt(meta.data.size, 10) : undefined;
+              this.fileCache.set(fileId, { id: fileId, mimeType: metaMime, size: metaSize });
+            } catch (e) {}
+          }
+
           return {
             stream: res.data as Readable,
-            mimeType: meta.data.mimeType || 'video/mp4',
-            size: meta.data.size ? parseInt(meta.data.size, 10) : undefined,
+            mimeType: metaMime,
+            size: metaSize,
           };
         }
       } catch (err: any) {

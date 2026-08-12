@@ -33,6 +33,7 @@ export class MediaController {
 
     res.setHeader('Content-Type', mimeType);
     res.setHeader('Accept-Ranges', 'bytes');
+    res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
     res.setHeader('Access-Control-Allow-Origin', '*');
 
     const range = req.headers.range;

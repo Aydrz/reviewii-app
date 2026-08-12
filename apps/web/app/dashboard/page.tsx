@@ -88,6 +88,8 @@ export default function AdminDashboardPage() {
       if (search) p.set('search', search);
       return fetchApi<Project[]>(`/projects?${p.toString()}`);
     },
+    staleTime: 30000,
+    gcTime: 300000,
     refetchInterval: 10000,
   });
 

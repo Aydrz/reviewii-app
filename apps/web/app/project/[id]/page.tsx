@@ -24,6 +24,9 @@ export default function EditorProjectPage() {
   const { data: project, refetch } = useQuery<Project>({
     queryKey: ['project', projectId],
     queryFn: () => fetchApi<Project>(`/projects/${projectId}`),
+    enabled: !!projectId,
+    staleTime: 30000,
+    gcTime: 300000,
   });
 
   if (!project) {
