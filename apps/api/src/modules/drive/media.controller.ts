@@ -24,41 +24,32 @@ export class MediaController {
       throw new NotFoundException('File parameter missing');
     }
 
-    const media = await this.driveService.getFileStream(fileIdOrPath);
+    const rangeHeader = req.headers.range;
+    const media = await this.driveService.getFileStream(fileIdOrPath, rangeHeader);
     if (!media) {
       throw new NotFoundException('Media file not found');
     }
 
-    const { stream, mimeType, size } = media;
+    const { stream, mimeType, size, status, contentRange, contentLength } = media;
 
     res.setHeader('Content-Type', mimeType);
     res.setHeader('Accept-Ranges', 'bytes');
     res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
     res.setHeader('Access-Control-Allow-Origin', '*');
 
-    const range = req.headers.range;
-    if (range && size) {
-      const parts = range.replace(/bytes=/, '').split('-');
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : size - 1;
-      const chunksize = end - start + 1;
+    if (contentRange) {
+      res.setHeader('Content-Range', contentRange);
+    }
+    if (contentLength) {
+      res.setHeader('Content-Length', contentLength);
+    }
 
+    if (status && status === 206) {
       res.status(HttpStatus.PARTIAL_CONTENT);
-      res.setHeader('Content-Range', `bytes ${start}-${end}/${size}`);
-      res.setHeader('Content-Length', chunksize);
-
-      if ('path' in stream && typeof (stream as any).path === 'string') {
-        const localPath = (stream as any).path;
-        const partialStream = fs.createReadStream(localPath, { start, end });
-        partialStream.pipe(res);
-        return;
-      }
+    } else {
+      res.status(HttpStatus.OK);
     }
 
-    if (size) {
-      res.setHeader('Content-Length', size);
-    }
-    res.status(HttpStatus.OK);
     stream.pipe(res);
   }
 }

@@ -315,52 +315,59 @@ export default function AdminDashboardPage() {
             return (
               <div
                 key={project.id}
-                className={`glass-panel p-3 flex items-center gap-3 transition-all hover:border-white/15 ${
-                  project.status === 'revisi' ? 'border-red-500/20' : ''
+                className={`glass-panel p-3.5 flex flex-col sm:flex-row sm:items-center gap-3 transition-all hover:border-white/15 ${
+                  project.status === 'revisi' ? 'border-red-500/20 bg-red-500/5' : ''
                 }`}
               >
-                {/* Thumbnail */}
-                <div className="w-[68px] h-[48px] rounded-lg bg-black/80 overflow-hidden flex-shrink-0 border border-white/8 flex items-center justify-center">
-                  {ver?.file_type === 'photo' && mediaUrl ? (
-                    <img src={mediaUrl} alt={project.title} className="w-full h-full object-cover" loading="lazy" />
-                  ) : mediaUrl ? (
-                    <video src={mediaUrl} className="w-full h-full object-cover" preload="none" />
-                  ) : (
-                    <Film className="w-4 h-4 text-neutral-700" />
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0 space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-xs text-white truncate leading-tight">{project.title}</span>
-                    <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-px rounded-full font-bold border flex-shrink-0 ${st.cls}`}>
-                      <StatusIcon className="w-2.5 h-2.5" />{st.label}
-                    </span>
-                    {project.guest_tokens?.[0]?.pin_code ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 px-2 py-0.5 rounded-md font-mono font-bold">
-                        <KeyRound className="w-3 h-3 text-cyan-400" /> PIN: {project.guest_tokens[0].pin_code}
-                      </span>
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {/* Thumbnail */}
+                  <div className="w-[80px] h-[52px] sm:w-[68px] sm:h-[48px] rounded-lg bg-black/80 overflow-hidden flex-shrink-0 border border-white/10 flex items-center justify-center relative">
+                    {ver?.file_type === 'photo' && mediaUrl ? (
+                      <img src={mediaUrl} alt={project.title} className="w-full h-full object-cover" loading="lazy" />
+                    ) : mediaUrl ? (
+                      <video src={mediaUrl} className="w-full h-full object-cover" preload="none" />
                     ) : (
-                      <span className="text-[10px] text-neutral-500 font-mono">Tanpa PIN</span>
+                      <Film className="w-4 h-4 text-neutral-700" />
                     )}
                   </div>
-                  <p className="text-[11px] text-neutral-500 truncate leading-tight">
-                    Klien: <strong className="text-neutral-300">{project.client_name}</strong> <span className="text-neutral-700">&bull;</span> <span className="font-mono">{new Date(project.created_at).toLocaleDateString('id-ID')}</span>
-                  </p>
-                  <button
-                    onClick={() => { setNotesProjectId(project.id); setEditingNoteId(null); setReplyText(''); }}
-                    className={`inline-flex items-center gap-1 text-[11px] font-bold transition-colors ${
-                      hasRevisions ? 'text-pink-400 hover:text-pink-300' : 'text-neutral-500 hover:text-neutral-300'
-                    }`}
-                  >
-                    <MessageSquare className="w-3 h-3" />
-                    {commentsCount} Catatan Revisi
-                  </button>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-bold text-xs sm:text-sm text-white truncate leading-tight">{project.title}</span>
+                      <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-px rounded-full font-bold border flex-shrink-0 ${st.cls}`}>
+                        <StatusIcon className="w-2.5 h-2.5" />{st.label}
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-neutral-400 truncate leading-tight">
+                      Klien: <strong className="text-neutral-200">{project.client_name}</strong>
+                    </p>
+
+                    <div className="flex items-center gap-2 flex-wrap text-[10px]">
+                      {project.guest_tokens?.[0]?.pin_code ? (
+                        <span className="inline-flex items-center gap-1 bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 px-2 py-0.5 rounded font-mono font-bold">
+                          <KeyRound className="w-3 h-3 text-cyan-400" /> PIN: {project.guest_tokens[0].pin_code}
+                        </span>
+                      ) : (
+                        <span className="text-neutral-500 font-mono">Tanpa PIN</span>
+                      )}
+
+                      <button
+                        onClick={() => { setNotesProjectId(project.id); setEditingNoteId(null); setReplyText(''); }}
+                        className={`inline-flex items-center gap-1 font-bold transition-colors ${
+                          hasRevisions ? 'text-pink-400 hover:text-pink-300' : 'text-neutral-500 hover:text-neutral-300'
+                        }`}
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                        {commentsCount} Catatan
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Action Icons */}
-                <div className="flex items-center gap-1.5 flex-shrink-0">
+                {/* Action Toolbar */}
+                <div className="flex items-center justify-end gap-1.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5 flex-shrink-0">
                   <button
                     onClick={() => {
                       setEditProjectTarget(project);
@@ -369,60 +376,40 @@ export default function AdminDashboardPage() {
                       setEditClientContact(project.client_contact || '');
                       setEditEditorPhone(project.editor_phone || '087824006766');
                     }}
-                    title="Edit Detail Project & Klien"
-                    className="icon-btn text-amber-400 hover:text-amber-300"
+                    title="Edit Project"
+                    className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-amber-400 transition-colors flex items-center justify-center"
                   >
-                    <Edit3 className="w-3.5 h-3.5" />
+                    <Edit3 className="w-4 h-4" />
                   </button>
+
                   <button
                     onClick={() => {
                       if (guestUrl) {
                         const pin = project.guest_tokens?.[0]?.pin_code;
-                        let text = guestUrl;
-                        if (pin) text += `\nKode PIN: ${pin}`;
-                        navigator.clipboard.writeText(text);
-                        toast.success('Link review & PIN berhasil disalin!');
+                        const fullMsg = `Halo ${project.client_name},\nBerikut link review video project *${project.title}*:\n🔗 ${guestUrl}${pin ? `\n🔑 PIN: *${pin}*` : ''}`;
+                        navigator.clipboard.writeText(fullMsg);
+                        toast.success('Link & PIN disalin ke clipboard!');
                       }
                     }}
-                    title="Salin Link & PIN"
-                    className="icon-btn group"
+                    title="Salin Link Review Klien"
+                    className="p-2 rounded-lg bg-cyan-400/10 hover:bg-cyan-400/20 text-cyan-400 border border-cyan-400/30 transition-colors flex items-center justify-center"
                   >
-                    <Copy className="w-3.5 h-3.5 text-cyan-400" />
+                    <Share2 className="w-4 h-4" />
                   </button>
 
-                  <a
-                    href={`https://wa.me/?text=${encodeURIComponent(
-                      `Yth. Bapak/Ibu ${project.client_name || 'Klien'},\n\nSemoga Bapak/Ibu dalam keadaan sehat.\n\nSehubungan dengan penyelesaian project video "${project.title}", kami ingin mengajukan hasil pekerjaan tersebut untuk direviu melalui tautan berikut:\n\nTautan: ${guestUrl}\nKode PIN: ${project.guest_tokens?.[0]?.pin_code || 'Tanpa PIN'}\n\nBapak/Ibu dapat menyalin PIN di atas saat membuka tautan untuk memberikan tanggapan atau saran perbaikan sesuai dengan SOP Review kami.\n\nAtas perhatian dan kerjasamanya, kami ucapkan terima kasih.`
-                    )}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Kirim WA Formal ke Klien"
-                    className="icon-btn text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 border-emerald-500/20"
+                  <Link
+                    href={`/project/${project.id}`}
+                    className="px-3 py-1.5 rounded-lg bg-[#2563FF] hover:bg-[#1A46CC] text-white text-xs font-bold transition-colors flex items-center gap-1"
                   >
-                    <Share2 className="w-3.5 h-3.5" />
-                  </a>
-
-                  <a
-                    href={getFullMediaUrl(`/projects/${project.id}/export-pdf`)}
-                    target="_blank" rel="noreferrer"
-                    title="Export PDF"
-                    className="icon-btn"
-                  >
-                    <FileText className="w-3.5 h-3.5 text-violet-400" />
-                  </a>
-
-                  {guestToken && (
-                    <Link href={`/review/${guestToken}`} target="_blank" title="Buka Halaman Reviewer" className="icon-btn">
-                      <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
-                    </Link>
-                  )}
+                    Buka <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
 
                   <button
                     onClick={() => setDeleteTarget({ id: project.id, title: project.title })}
                     title="Hapus Project"
-                    className="icon-btn text-neutral-500 hover:text-red-400"
+                    className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-colors flex items-center justify-center ml-1"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>

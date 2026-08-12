@@ -234,7 +234,7 @@ export class DriveService {
   /**
    * Mendapatkan file stream (dari Google Drive atau local disk) untuk pemutaran video
    */
-  async getFileStream(fileOrPath: string): Promise<{ stream: Readable; mimeType: string; size?: number } | null> {
+  async getFileStream(fileOrPath: string, rangeHeader?: string): Promise<{ stream: Readable; mimeType: string; size?: number; status?: number; contentRange?: string; contentLength?: number } | null> {
     if (!fileOrPath) return null;
 
     // 1. Coba ambil dari Google Drive jika Drive API aktif
@@ -258,27 +258,24 @@ export class DriveService {
         }
 
         if (!fileId.includes('/') && !fileId.includes('\\')) {
-          const res = await this.drive.files.get({ fileId, alt: 'media' }, { responseType: 'stream' });
-          let metaMime = 'video/mp4';
-          let metaSize: number | undefined = undefined;
-
-          if (this.fileCache.has(fileId)) {
-            const cached = this.fileCache.get(fileId)!;
-            metaMime = cached.mimeType;
-            metaSize = cached.size;
-          } else {
-            try {
-              const meta = await this.drive.files.get({ fileId, fields: 'mimeType, size' });
-              metaMime = meta.data.mimeType || 'video/mp4';
-              metaSize = meta.data.size ? parseInt(meta.data.size, 10) : undefined;
-              this.fileCache.set(fileId, { id: fileId, mimeType: metaMime, size: metaSize });
-            } catch (e) {}
+          const reqHeaders: Record<string, string> = {};
+          if (rangeHeader) {
+            reqHeaders['Range'] = rangeHeader;
           }
+
+          const res = await this.drive.files.get({ fileId, alt: 'media' }, { responseType: 'stream', headers: reqHeaders });
+          const metaMime = (res.headers['content-type'] as string) || 'video/mp4';
+          const metaSize = res.headers['content-length'] ? parseInt(res.headers['content-length'] as string, 10) : undefined;
+          const status = res.status;
+          const contentRange = res.headers['content-range'] as string | undefined;
 
           return {
             stream: res.data as Readable,
             mimeType: metaMime,
             size: metaSize,
+            status,
+            contentRange,
+            contentLength: metaSize,
           };
         }
       } catch (err: any) {

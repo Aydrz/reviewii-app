@@ -198,6 +198,8 @@ export default function VideoPlayer({
                 <video
                   ref={videoRef}
                   src={fullMediaUrl}
+                  crossOrigin="anonymous"
+                  preload="metadata"
                   poster={getFullMediaUrl(currentVersion.thumbnail_url)}
                   playsInline
                   style={{
