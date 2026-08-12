@@ -162,5 +162,10 @@ export async function uploadFileApi<T>(
 export function getFullMediaUrl(url?: string): string {
   if (!url) return '';
   if (url.startsWith('http') || url.startsWith('data:')) return url;
-  return `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+  let targetUrl = url;
+  if (targetUrl.startsWith('/uploads/')) {
+    targetUrl = targetUrl.replace(/^\/uploads\//, '/media/stream/');
+  }
+  const cleanUrl = targetUrl.startsWith('/') ? targetUrl : `/${targetUrl}`;
+  return `${API_BASE_URL}${cleanUrl}`;
 }

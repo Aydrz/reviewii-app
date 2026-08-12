@@ -43,15 +43,17 @@ export class VersionsService {
     const newVersionNumber = (latestVersion?.version_number || 0) + 1;
     const saved = await this.driveService.saveFile(file.buffer, file.originalname, project.title);
 
+    const mediaStreamUrl = `/media/stream/${saved.fileId}`;
+
     const version = await this.prisma.version.create({
       data: {
         project_id: projectId,
         version_number: newVersionNumber,
         file_type: fileType,
         drive_file_id: saved.fileId,
-        file_url: saved.filePath,
-        proxy_url: saved.filePath,
-        thumbnail_url: saved.filePath,
+        file_url: mediaStreamUrl,
+        proxy_url: mediaStreamUrl,
+        thumbnail_url: mediaStreamUrl,
         duration_seconds: 0,
         processing_status: 'ready',
       },

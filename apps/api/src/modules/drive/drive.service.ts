@@ -228,4 +228,58 @@ export class DriveService {
       }
     }
   }
+
+  /**
+   * Mendapatkan file stream (dari Google Drive atau local disk) untuk pemutaran video
+   */
+  async getFileStream(fileOrPath: string): Promise<{ stream: Readable; mimeType: string; size?: number } | null> {
+    if (!fileOrPath) return null;
+
+    // 1. Coba ambil dari Google Drive jika Drive API aktif
+    if (this.drive) {
+      try {
+        let fileId = fileOrPath;
+        if (fileOrPath.startsWith('/uploads/')) {
+          const fileName = path.basename(fileOrPath);
+          const searchRes = await this.drive.files.list({
+            q: `name='${fileName}' and trashed=false`,
+            fields: 'files(id, name, mimeType, size)',
+          });
+          if (searchRes.data.files && searchRes.data.files.length > 0) {
+            fileId = searchRes.data.files[0].id!;
+          }
+        }
+
+        if (!fileId.includes('/') && !fileId.includes('\\')) {
+          const meta = await this.drive.files.get({ fileId, fields: 'mimeType, size' });
+          const res = await this.drive.files.get({ fileId, alt: 'media' }, { responseType: 'stream' });
+          return {
+            stream: res.data as Readable,
+            mimeType: meta.data.mimeType || 'video/mp4',
+            size: meta.data.size ? parseInt(meta.data.size, 10) : undefined,
+          };
+        }
+      } catch (err: any) {
+        this.logger.error(`Stream dari Google Drive gagal (${fileOrPath}): ${err.message}`);
+      }
+    }
+
+    // 2. Coba ambil dari penyimpanan lokal disk /tmp/uploads
+    try {
+      const cleanPath = fileOrPath.replace(/^\/uploads\//, '');
+      const localPath = path.join(this.uploadDir, cleanPath);
+      if (fs.existsSync(localPath)) {
+        const stats = fs.statSync(localPath);
+        const ext = path.extname(localPath).toLowerCase();
+        const mimeType = ext === '.png' ? 'image/png' : ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 'video/mp4';
+        return {
+          stream: fs.createReadStream(localPath),
+          mimeType,
+          size: stats.size,
+        };
+      }
+    } catch (e) {}
+
+    return null;
+  }
 }
