@@ -419,53 +419,79 @@ export default function DedicatedReviewerPage() {
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-3 pb-14">
-      {/* ── Header ───────────────────────────────────────────────────────── */}
-      <header className="glass-panel px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-        <div className="min-w-0">
-          <h1 className="font-black text-sm text-white truncate">{project.title}</h1>
-          <p className="text-[11px] text-neutral-400">Reviewer: <strong className="text-neutral-200">{project.client_name}</strong></p>
+    <div className="max-w-3xl mx-auto space-y-4 pb-16 px-2 sm:px-4 animate-fade-in">
+      {/* ── Mobile-First Header Capsule ───────────────────────────────────── */}
+      <header className="sticky top-2 z-40 bg-[#0c1017]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h1 className="font-black text-sm text-white truncate leading-tight">{project.title}</h1>
+            <span
+              className={`text-[10px] px-2 py-0.5 rounded-full font-bold border flex items-center gap-1 flex-shrink-0 ${
+                project.status === 'approved'
+                  ? 'bg-cyan-400/15 text-cyan-400 border-cyan-400/40'
+                  : project.status === 'revisi'
+                  ? 'bg-red-500/15 text-red-400 border-red-500/40'
+                  : 'bg-amber-500/15 text-amber-400 border-amber-500/40'
+              }`}
+            >
+              {project.status === 'approved' ? (
+                <CheckCircle2 className="w-3 h-3" />
+              ) : project.status === 'revisi' ? (
+                <AlertCircle className="w-3 h-3" />
+              ) : (
+                <Clock className="w-3 h-3" />
+              )}
+              <span>{project.status === 'approved' ? 'Approved' : project.status === 'revisi' ? 'Perlu Revisi' : 'Menunggu'}</span>
+            </span>
+          </div>
+          <p className="text-[11px] text-neutral-400 mt-0.5 truncate">
+            Reviewer: <strong className="text-neutral-200">{project.client_name}</strong>
+          </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
-          <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold border flex items-center gap-1.5 flex-shrink-0 ${
-            project.status === 'approved' ? 'bg-cyan-400/15 text-cyan-400 border-cyan-400/40'
-            : project.status === 'revisi' ? 'bg-red-500/15 text-red-400 border-red-500/40'
-            : 'bg-amber-500/15 text-amber-400 border-amber-500/40'
-          }`}>
-            {project.status === 'approved' ? <CheckCircle2 className="w-3 h-3" />
-             : project.status === 'revisi' ? <AlertCircle className="w-3 h-3" />
-             : <Clock className="w-3 h-3" />}
-            {project.status === 'approved' ? 'Approved' : project.status === 'revisi' ? 'Perlu Revisi' : 'Menunggu'}
-          </span>
-
-          <button onClick={() => setShowSop(true)} className="btn-cyber-secondary py-1.5 px-3 text-[11px]">
-            <HelpCircle className="w-3.5 h-3.5 text-cyan-400" /> SOP
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <button
+            onClick={() => setShowSop(true)}
+            className="p-2 bg-white/5 hover:bg-white/10 text-neutral-300 rounded-xl text-xs border border-white/10 flex items-center gap-1 font-bold"
+            title="SOP Review"
+          >
+            <HelpCircle className="w-4 h-4 text-cyan-400" />
+            <span className="hidden sm:inline">SOP</span>
           </button>
 
-          <button onClick={handleDownload} className="btn-cyber-secondary py-1.5 px-3 text-[11px] border-cyan-400/30 text-cyan-400">
-            <Download className="w-3.5 h-3.5" /> Download
+          <button
+            onClick={handleDownload}
+            className="p-2 bg-cyan-400/10 hover:bg-cyan-400/20 text-cyan-400 border border-cyan-400/30 rounded-xl text-xs flex items-center gap-1 font-bold"
+            title="Download Video"
+          >
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">Download</span>
           </button>
 
           {project.status !== 'approved' && (
             <>
               <button
                 onClick={() => setShowFinishReviewModal(true)}
-                className="py-1.5 px-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 rounded-xl text-[11px] font-extrabold flex items-center gap-1 transition-colors"
+                className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 rounded-xl text-xs font-extrabold flex items-center gap-1 transition-all"
               >
-                <CheckCircle2 className="w-3.5 h-3.5" /> Selesai Review
+                <CheckCircle2 className="w-4 h-4" />
+                <span className="hidden xs:inline">Selesai</span>
               </button>
 
-              <button onClick={() => setShowApproveConfirm(true)} className="btn-cyber-primary py-1.5 px-3 text-[11px]">
-                <Sparkles className="w-3.5 h-3.5" /> Approve
+              <button
+                onClick={() => setShowApproveConfirm(true)}
+                className="px-3 py-2 bg-cyan-400 hover:bg-cyan-300 text-black rounded-xl text-xs font-black flex items-center gap-1 shadow-lg shadow-cyan-400/20 transition-all"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span className="hidden xs:inline">Approve</span>
               </button>
             </>
           )}
         </div>
       </header>
 
-      {/* ── Video Player ─────────────────────────────────────────────────── */}
-      <div className="glass-panel overflow-hidden border-white/10">
+      {/* ── Video Player & Mobile Scrubber Controls ──────────────────────── */}
+      <div className="rounded-2xl overflow-hidden border border-white/10 bg-black shadow-2xl">
         <div className="relative aspect-video bg-black flex items-center justify-center">
           {ver?.file_type === 'photo' ? (
             <img src={mediaUrl} alt={project.title} className="max-w-full max-h-full object-contain" />
@@ -488,17 +514,21 @@ export default function DedicatedReviewerPage() {
           {showDrawing && (
             <DrawingCanvas
               frameImageUrl={capturedFrame}
-              onSaveDrawing={(dataUrl) => { setDrawingData(dataUrl); setShowDrawing(false); }}
+              onSaveDrawing={(dataUrl) => {
+                setDrawingData(dataUrl);
+                setShowDrawing(false);
+              }}
               onClose={() => setShowDrawing(false)}
             />
           )}
         </div>
 
         {ver?.file_type !== 'photo' && (
-          <div className="bg-black/70 border-t border-white/10 px-3 pt-2 pb-3 space-y-2">
+          <div className="bg-[#0c1017] border-t border-white/10 p-3 space-y-3">
+            {/* Timeline Scrubber Bar */}
             <div
               ref={scrubberRef}
-              className="relative w-full h-2.5 bg-neutral-800 rounded-full cursor-pointer select-none"
+              className="relative w-full h-3 bg-neutral-800/80 rounded-full cursor-pointer select-none border border-white/5"
               onMouseMove={(e) => {
                 const rect = scrubberRef.current!.getBoundingClientRect();
                 setHoverTime(Math.max(0, Math.min(((e.clientX - rect.left) / rect.width) * duration, duration)));
@@ -509,7 +539,7 @@ export default function DedicatedReviewerPage() {
             >
               {hoverTime !== null && !isScrubbing && (
                 <div
-                  className="absolute -top-7 font-mono text-[10px] text-cyan-400 bg-black/90 border border-cyan-400/40 px-1.5 py-0.5 rounded pointer-events-none transform -translate-x-1/2 z-30"
+                  className="absolute -top-7 font-mono text-[10px] text-cyan-400 bg-black/90 border border-cyan-400/40 px-1.5 py-0.5 rounded pointer-events-none transform -translate-x-1/2 z-30 shadow-md"
                   style={{ left: `${(hoverTime / duration) * 100}%` }}
                 >
                   {fmtMmSs(hoverTime)}
@@ -517,49 +547,78 @@ export default function DedicatedReviewerPage() {
               )}
 
               <div
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full"
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full shadow-[0_0_10px_rgba(0,240,201,0.5)]"
                 style={{ width: `${progress}%` }}
               />
 
               <div
-                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-cyan-400 rounded-full border-2 border-white shadow-lg shadow-cyan-400/50 transform -translate-x-1/2 transition-transform hover:scale-125 z-20"
+                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-cyan-400 rounded-full border-2 border-white shadow-lg transform -translate-x-1/2 transition-transform hover:scale-125 z-20"
                 style={{ left: `${progress}%` }}
               />
 
               {comments.map((c) => (
                 <div
                   key={c.id}
-                  className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-pink-500 rounded-full border border-white cursor-pointer hover:scale-150 transition-transform z-10 -translate-x-1/2"
+                  className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-pink-500 rounded-full border-2 border-white cursor-pointer hover:scale-150 transition-transform z-10 -translate-x-1/2 shadow-md"
                   style={{ left: `${duration > 0 ? (c.timestamp_seconds / duration) * 100 : 0}%` }}
                   title={`${fmtMmSs(c.timestamp_seconds)} - ${c.content || 'Catatan'}`}
-                  onClick={(e) => { e.stopPropagation(); if (!hasUnsaved) seekTo(c.timestamp_seconds); else setShowUnsavedWarn(true); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!hasUnsaved) seekTo(c.timestamp_seconds);
+                    else setShowUnsavedWarn(true);
+                  }}
                 />
               ))}
             </div>
 
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <button onClick={() => stepFrame(-1)} title="Mundur 1 Frame" className="p-1.5 text-neutral-400 hover:text-white rounded-lg">
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button onClick={handleTogglePlay} className="p-1.5 text-white hover:text-cyan-400">
-                  {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-current" />}
-                </button>
-                <button onClick={() => stepFrame(1)} title="Maju 1 Frame" className="p-1.5 text-neutral-400 hover:text-white rounded-lg">
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-                <button onClick={() => { if (videoRef.current) { videoRef.current.muted = !isMuted; setIsMuted(!isMuted); } }} className="p-1.5">
-                  {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-neutral-300" />}
-                </button>
-                <span className="font-mono text-[11px] text-neutral-300 ml-1">{fmtMmSs(currentTime)} / {fmtMmSs(duration)}</span>
+            {/* Controls Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+              <div className="flex items-center justify-between sm:justify-start gap-2">
+                <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
+                  <button onClick={() => stepFrame(-1)} title="Mundur 1 Frame" className="p-1.5 text-neutral-300 hover:text-white rounded-lg">
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button onClick={handleTogglePlay} className="p-1.5 text-white hover:text-cyan-400">
+                    {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-current" />}
+                  </button>
+                  <button onClick={() => stepFrame(1)} title="Maju 1 Frame" className="p-1.5 text-neutral-300 hover:text-white rounded-lg">
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => {
+                      if (videoRef.current) {
+                        videoRef.current.muted = !isMuted;
+                        setIsMuted(!isMuted);
+                      }
+                    }}
+                    className="p-2 bg-white/5 border border-white/10 rounded-xl text-neutral-300"
+                  >
+                    {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-neutral-300" />}
+                  </button>
+                  <span className="font-mono text-xs text-cyan-400 font-bold bg-cyan-400/10 border border-cyan-400/20 px-2.5 py-1 rounded-xl">
+                    {fmtMmSs(currentTime)} / {fmtMmSs(duration)}
+                  </span>
+                </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                <button onClick={handleOpenDrawing} className="btn-cyber-primary w-auto py-1.5 px-2.5 text-[11px]">
-                  <PenTool className="w-3.5 h-3.5" /> Tambahkan Coretan
+              {/* Action Buttons Row */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleOpenDrawing}
+                  className="flex-1 sm:flex-initial py-2 px-3 bg-cyan-400/15 text-cyan-400 border border-cyan-400/35 hover:bg-cyan-400/25 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
+                >
+                  <PenTool className="w-4 h-4" />
+                  <span>Coretan</span>
                 </button>
-                <button onClick={() => setShowRevList(true)} className="btn-cyber-secondary py-1.5 px-2.5 text-[11px]">
-                  <MessageSquare className="w-3.5 h-3.5 text-pink-400" /> ({comments.length})
+                <button
+                  onClick={() => setShowRevList(true)}
+                  className="flex-1 sm:flex-initial py-2 px-3 bg-white/5 text-pink-400 border border-pink-500/30 hover:bg-white/10 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Catatan ({comments.length})</span>
                 </button>
               </div>
             </div>
@@ -567,27 +626,42 @@ export default function DedicatedReviewerPage() {
         )}
       </div>
 
-      {/* ── Revision Form ────────────────────────────────────────────────── */}
-      <form onSubmit={handleSubmitNote} className="glass-panel p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-white">Tambah Catatan Revisi</span>
+      {/* ── Double-Bezel Mobile Revision Form Card ──────────────────────── */}
+      <form onSubmit={handleSubmitNote} className="rounded-2xl border border-white/10 bg-[#0c1017]/95 shadow-2xl p-4 sm:p-5 space-y-3.5">
+        <div className="flex items-center justify-between flex-wrap gap-2 border-b border-white/10 pb-2.5">
+          <span className="text-xs font-bold text-white flex items-center gap-1.5">
+            <MessageSquare className="w-4 h-4 text-cyan-400" /> Tambah Catatan Revisi
+          </span>
           {!isOverallNote && (
-            <button type="button" onClick={stampCurrentTime} className="font-mono text-[11px] bg-cyan-400/15 text-cyan-400 border border-cyan-400/30 px-2.5 py-0.5 rounded-full hover:bg-cyan-400/25">
-              Posisi: {fmtMmSs(currentTime)}
+            <button
+              type="button"
+              onClick={stampCurrentTime}
+              className="font-mono text-[11px] font-bold bg-cyan-400/15 text-cyan-400 border border-cyan-400/35 px-3 py-1 rounded-full hover:bg-cyan-400/25 transition-all"
+            >
+              🎯 Patok Posisi: {fmtMmSs(currentTime)}
             </button>
           )}
         </div>
 
-        <label className="flex items-center gap-2 text-xs text-neutral-300 cursor-pointer">
-          <input type="checkbox" checked={isOverallNote} onChange={(e) => setIsOverallNote(e.target.checked)} className="w-3.5 h-3.5 accent-cyan-400" />
-          Catatan Keseluruhan Video (tanpa timestamp)
+        <label className="flex items-center gap-2 text-xs text-neutral-300 cursor-pointer bg-white/5 p-2.5 rounded-xl border border-white/5">
+          <input
+            type="checkbox"
+            checked={isOverallNote}
+            onChange={(e) => setIsOverallNote(e.target.checked)}
+            className="w-4 h-4 accent-cyan-400 rounded"
+          />
+          <span className="font-medium">Catatan Keseluruhan Video (tanpa timestamp)</span>
         </label>
 
         {!isOverallNote && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-bold text-neutral-400 mb-1">Kategori</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} className="cyber-input py-1.5 text-xs">
+              <label className="block text-[11px] font-bold text-neutral-400 mb-1">Kategori Revisi</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="cyber-input py-2 text-xs bg-black/60 border-white/15 focus:border-cyan-400"
+              >
                 <option value="Lainnya">Lainnya (Default)</option>
                 <option value="Musik">Musik & Audio</option>
                 <option value="Transisi">Cut & Transisi</option>
@@ -597,8 +671,19 @@ export default function DedicatedReviewerPage() {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[11px] font-bold text-neutral-400">Rentang Waktu</label>
-                <input type="checkbox" checked={useTimeRange} onChange={(e) => { setUseTimeRange(e.target.checked); if (e.target.checked) { setStartMmSs(fmtMmSs(currentTime)); setEndMmSs(fmtMmSs(Math.min(currentTime + 5, duration))); } }} className="w-3.5 h-3.5 accent-cyan-400" />
+                <label className="text-[11px] font-bold text-neutral-400">Rentang Waktu (Durasi)</label>
+                <input
+                  type="checkbox"
+                  checked={useTimeRange}
+                  onChange={(e) => {
+                    setUseTimeRange(e.target.checked);
+                    if (e.target.checked) {
+                      setStartMmSs(fmtMmSs(currentTime));
+                      setEndMmSs(fmtMmSs(Math.min(currentTime + 5, duration)));
+                    }
+                  }}
+                  className="w-4 h-4 accent-cyan-400 rounded"
+                />
               </div>
               {useTimeRange ? (
                 <div className="flex items-center gap-2">
@@ -607,66 +692,84 @@ export default function DedicatedReviewerPage() {
                     value={startMmSs}
                     onChange={(e) => setStartMmSs(e.target.value)}
                     placeholder="0:00"
-                    className="cyber-input py-1 text-xs font-mono text-center w-full"
+                    className="cyber-input py-1.5 text-xs font-mono text-center w-full"
                   />
-                  <span className="text-[11px] text-neutral-500 flex-shrink-0">-</span>
+                  <span className="text-xs text-neutral-500 font-bold flex-shrink-0">-</span>
                   <input
                     type="text"
                     value={endMmSs}
                     onChange={(e) => setEndMmSs(e.target.value)}
                     placeholder="0:30"
-                    className="cyber-input py-1 text-xs font-mono text-center w-full"
+                    className="cyber-input py-1.5 text-xs font-mono text-center w-full"
                   />
                 </div>
               ) : (
-                <p className="text-[10px] text-neutral-500 font-mono">Titik: {fmtMmSs(currentTime)}</p>
+                <div className="p-2 bg-black/40 border border-white/10 rounded-xl font-mono text-xs text-cyan-400 text-center font-bold">
+                  Titik Spesifik: {fmtMmSs(currentTime)}
+                </div>
               )}
             </div>
           </div>
         )}
 
         {category === 'Musik' && !isOverallNote && (
-          <div className="p-2.5 bg-cyan-400/10 border border-cyan-400/30 rounded-xl space-y-1.5">
-            <label className="text-[11px] font-bold text-white flex items-center gap-1.5">
-              <Music className="w-3.5 h-3.5 text-cyan-400" /> Upload Audio Referensi
+          <div className="p-3 bg-cyan-400/10 border border-cyan-400/30 rounded-xl space-y-1.5">
+            <label className="text-xs font-bold text-white flex items-center gap-1.5">
+              <Music className="w-4 h-4 text-cyan-400" /> Upload Audio Referensi
             </label>
-            <input type="file" accept="audio/*" onChange={(e) => e.target.files && setMusicFile(e.target.files[0])}
-              className="w-full text-[11px] text-neutral-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-cyan-400 file:text-black cursor-pointer" />
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={(e) => e.target.files && setMusicFile(e.target.files[0])}
+              className="w-full text-xs text-neutral-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-cyan-400 file:text-black cursor-pointer"
+            />
           </div>
         )}
 
-        <input
-          type="text"
-          placeholder="Tulis instruksi revisi secara rinci..."
-          value={commentText}
-          onChange={(e) => setCommentText(e.target.value)}
-          className="cyber-input py-2 text-xs"
-        />
+        <div>
+          <label className="block text-[11px] font-bold text-neutral-400 mb-1">Instruksi Catatan *</label>
+          <input
+            type="text"
+            placeholder="Tulis instruksi perbaikan video secara rinci..."
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            className="cyber-input py-2.5 text-xs bg-black/60 border-white/15 focus:border-cyan-400"
+          />
+        </div>
 
-        {/* Multiple Attachments previews */}
+        {/* Attachments preview grid */}
         <div className="flex items-center gap-2 flex-wrap">
           {drawingData && (
             <div className="relative">
-              <img src={drawingData} alt="Coretan" className="w-20 h-14 object-cover rounded-lg border border-cyan-400 shadow-[0_0_8px_rgba(0,240,201,0.2)]" />
-              <button type="button" onClick={() => setDrawingData(null)} className="absolute -top-1.5 -right-1.5 bg-red-500 rounded-full p-0.5 text-white">
+              <img src={drawingData} alt="Coretan" className="w-20 h-14 object-cover rounded-xl border border-cyan-400 shadow-[0_0_12px_rgba(0,240,201,0.3)]" />
+              <button
+                type="button"
+                onClick={() => setDrawingData(null)}
+                className="absolute -top-1.5 -right-1.5 bg-red-500 rounded-full p-1 text-white shadow-md"
+              >
                 <X className="w-3 h-3" />
               </button>
             </div>
           )}
 
           {attachFiles.map((file, idx) => (
-            <div key={idx} className="flex items-center gap-1.5 bg-black/60 border border-white/12 px-2.5 py-1.5 rounded-lg text-[11px] font-mono text-neutral-300">
-              <ImageIcon className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-              <span className="truncate max-w-[110px]">{file.name}</span>
-              <button type="button" onClick={() => setAttachFiles((prev) => prev.filter((_, i) => i !== idx))} className="ml-1 text-neutral-500 hover:text-white flex-shrink-0">
-                <X className="w-3 h-3" />
+            <div key={idx} className="flex items-center gap-1.5 bg-black/60 border border-white/15 px-3 py-1.5 rounded-xl text-xs font-mono text-neutral-300">
+              <ImageIcon className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+              <span className="truncate max-w-[120px]">{file.name}</span>
+              <button
+                type="button"
+                onClick={() => setAttachFiles((prev) => prev.filter((_, i) => i !== idx))}
+                className="ml-1 text-neutral-500 hover:text-white flex-shrink-0"
+              >
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           ))}
 
           {category !== 'Musik' && (
-            <label className="btn-cyber-secondary py-1.5 px-2.5 text-[11px] cursor-pointer">
-              <Paperclip className="w-3.5 h-3.5 text-cyan-400" /> + Lampirkan File ({attachFiles.length})
+            <label className="py-2 px-3 bg-white/5 hover:bg-white/10 text-cyan-400 border border-white/10 rounded-xl text-xs font-bold cursor-pointer inline-flex items-center gap-1.5 transition-colors">
+              <Paperclip className="w-4 h-4 text-cyan-400" />
+              <span>+ Lampirkan File ({attachFiles.length})</span>
               <input
                 type="file"
                 multiple
@@ -685,9 +788,10 @@ export default function DedicatedReviewerPage() {
         <button
           type="submit"
           disabled={isSubmitting || (!commentText.trim() && !drawingData && attachFiles.length === 0 && !musicFile)}
-          className="btn-cyber-primary py-2.5 text-xs disabled:opacity-50"
+          className="btn-cyber-primary py-3 text-xs w-full font-black flex items-center justify-center gap-2 shadow-lg shadow-cyan-400/20 disabled:opacity-50"
         >
-          <Send className="w-3.5 h-3.5" /> {isSubmitting ? 'Mengirim...' : 'Kirim Catatan Revisi'}
+          <Send className="w-4 h-4" />
+          <span>{isSubmitting ? 'Mengirim Catatan...' : 'Kirim Catatan Revisi'}</span>
         </button>
       </form>
 
