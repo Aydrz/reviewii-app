@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Search as SearchIcon, X } from 'lucide-react';
 import ProjectCard from '../../components/feed/ProjectCard';
@@ -9,10 +9,22 @@ import { Project } from '@reviewii/shared-types';
 
 export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+
+  // ⚡ Bolt: Debounce search input to reduce API calls while typing
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
 
   const { data: projects = [], isLoading } = useQuery<Project[]>({
-    queryKey: ['projects', 'search', searchTerm],
-    queryFn: () => fetchApi<Project[]>(`/projects?search=${encodeURIComponent(searchTerm)}`),
+    queryKey: ['projects', 'search', debouncedSearchTerm],
+    queryFn: () => fetchApi<Project[]>(`/projects?search=${encodeURIComponent(debouncedSearchTerm)}`),
   });
 
   return (
